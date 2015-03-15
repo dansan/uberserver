@@ -11,7 +11,7 @@ from SQLUsers import User
 
 # logging
 xmlrpc_logfile = os.path.join(os.path.dirname(__file__), "xmlrpc.log")
-logger = logging.getLogger()
+logger = logging.getLogger("xml-rpc")
 logger.setLevel(logging.DEBUG)
 fh = TimedRotatingFileHandler(xmlrpc_logfile, when="midnight", backupCount=6)
 formatter = logging.Formatter(fmt='%(asctime)s %(levelname)-5s %(module)s.%(funcName)s:%(lineno)d  %(message)s',

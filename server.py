@@ -23,6 +23,7 @@ from Client import Client
 from NATServer import NATServer
 from Dispatcher import Dispatcher
 from XmlRpcServer import XmlRpcServer
+from UberCluster import UberCluster
 
 import ip2country # just to make sure it's downloaded
 import ChanServ
@@ -114,6 +115,12 @@ try:
 	_root.console_write('Listening for XMLRPC clients on port %d' % xmlrpcserver.port)
 except socket.error:
 	print('Error: Could not start XmlRpcServer.')
+
+try:
+	cluster = UberCluster(_root.engine)
+	cluster.retrieve_active_nodes()
+except Exception, e:
+	_root.error('Error: Could not start UberCluster:\n%s' % traceback.format_exc())
 
 try:
 	dispatcher.pump()
