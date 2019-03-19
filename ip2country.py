@@ -1,63 +1,36 @@
-from pygeoip import pygeoip
-import traceback
+#!/usr/bin/python3
+# coding=utf-8
+# This file is part of the uberserver (GPL v2 or later), see LICENSE
 
-dbfile = 'GeoIP.dat'
-
-def update():
-	gzipfile = dbfile + ".gz"
-	f = open(gzipfile, 'w')
-	dburl = 'http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz'
-	import urllib2
-	import gzip
-	print("Downloading %s ..." %(dburl))
-	response = urllib2.urlopen(dburl)
-	f.write(response.read())
-	f.close()
-	print("done!")
-	f = gzip.open(gzipfile)
-	db = open(dbfile, 'w')
-	db.write(f.read())
-	f.close()
-	db.close()
-
-try:
-	f=open(dbfile,'r')
-	f.close()
-except:
-	print("%s doesn't exist, downloading..." % (dbfile))
-	update()
+dbfile = "/usr/share/GeoIP/GeoIP.dat"
 
 def loaddb():
 	global geoip
 	try:
-		geoip = pygeoip.Database(dbfile)
+		import GeoIP
+		geoip = GeoIP.open(dbfile, GeoIP.GEOIP_STANDARD)
 		return True
 	except Exception as e:
 		print("Couldn't load %s: %s" % (dbfile, str(e)))
-		print(traceback.format_exc())
+		print("Hint: apt-get install geoip-database python-geoip")
 		return False
 
 working = loaddb()
 
-
 def lookup(ip):
 	if not working: return '??'
-	addrinfo = geoip.lookup(ip)
-	if not addrinfo.country: return '??'
-	return addrinfo.country
+	addrinfo = geoip.country_code_by_addr(ip)
+	if not addrinfo: return '??'
+	return addrinfo
 
 def reloaddb():
-	if not working: return
-	loaddb()
-"""
-print lookup("37.187.59.77")
-print lookup("77.64.139.108")
-print lookup("8.8.8.8")
-print lookup("0.0.0.0")
-import csv
-with open('/tmp/test.csv', 'rb') as csvfile:
-	reader = csv.reader(csvfile, delimiter=' ', quotechar='"')
-	for row in reader:
-		ip = row[0]
-		print("%s %s" %(ip, lookup(row[0])))
-"""
+	working = loaddb()
+
+
+if __name__ == '__main__':
+	assert(lookup("37.187.59.77")  == 'FR')
+	assert(lookup("77.64.139.108") == 'DE')
+	assert(lookup("78.46.100.157") == 'DE')
+	assert(lookup("8.8.8.8")       == 'US')
+	assert(lookup("0.0.0.0")       == '??')
+	print("Test ok!")
